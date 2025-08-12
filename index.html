@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Homeschool Curriculum Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1);
+            overflow: visible;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="20" cy="80" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            font-weight: 800;
+            background: linear-gradient(45deg, #ffffff, #f1f5f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 8px;
+            gap: 4px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 16px 24px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+            transform: translateY(-1px);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            box-shadow: 0 4px 14px rgba(100, 116, 139, 0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 25px rgba(100, 116, 139, 0.4);
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .quarter-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quarter-btn.active {
+            background: #4facfe;
+            color: white;
+            border-color: #4facfe;
+        }
+
+        .curriculum-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .curriculum-table th {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 18px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .curriculum-table th .editable {
+            background: transparent;
+            border: 2px dashed transparent;
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            min-height: auto;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .curriculum-table th .editable:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .curriculum-table th .editable:focus {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .curriculum-table th .editable:empty::before {
+            content: 'Click to edit header...';
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .curriculum-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+
+        .curriculum-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .editable {
+            background: rgba(248, 250, 252, 0.5);
+            border: 2px dashed #cbd5e1;
+            padding: 12px;
+            border-radius: 8px;
+            min-height: 44px;
+            cursor: text;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .editable:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.05);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+        }
+
+        .editable:focus {
+            outline: none;
+            border: 2px solid #6366f1;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .editable:empty::before {
+            content: 'Click to edit...';
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .notes-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .notes-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .insights-section {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .insights-section h3 {
+            color: #0c5460;
+            margin-bottom: 15px;
+        }
+
+        .quarter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .week-column {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .week-column h4 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .date-range {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .subject-row {
+            display: grid;
+            grid-template-columns: 150px 150px repeat(10, 1fr);
+            gap: 8px;
+            align-items: stretch;
+            padding: 8px;
+            border-bottom: 1px solid #e9ecef;
+            background: white;
+        }
+
+        .subject-row:first-child {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 4px rgba(79, 172, 254, 0.3);
+        }
+
+        .subject-row:hover:not(:first-child) {
+            background: #f8f9fa;
+        }
+
+        .subject-cell {
+            padding: 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            background: white;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .subject-row:first-child .subject-cell,
+        .subject-row:first-child > div {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .calendar-nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .curriculum-table {
+                font-size: 0.9rem;
+            }
+            
+            .subject-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ EduFlow Planner</h1>
+            <p>Smart Curriculum Design for Modern Educators</p>
+            <div style="margin-top: 20px; display: flex; justify-content: center; gap: 40px; font-size: 1.1rem;">
+                <div>
+                    <strong>Student:</strong> 
+                    <span id="header-student-name" style="cursor: pointer; text-decoration: underline; padding: 4px 8px; border-radius: 6px; transition: background 0.3s;" onclick="editHeaderName('student')">Click to edit</span>
+                </div>
+                <div>
+                    <strong>Teacher/Facilitator:</strong> 
+                    <span id="header-teacher-name" style="cursor: pointer; text-decoration: underline; padding: 4px 8px; border-radius: 6px; transition: background 0.3s;" onclick="editHeaderName('teacher')">Click to edit</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchView('subject')">Subject Curriculum Map</button>
+            <button class="nav-tab" id="overview-tab" onclick="switchView('quarter')">Quarterly Overview</button>
+        </div>
+
+        <div class="content">
+            <!-- Subject Curriculum Map View -->
+            <div id="subject-view" class="view active">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="subject-name">Subject Name</label>
+                        <select id="subject-name">
+                            <option value="Mathematics" selected>Mathematics</option>
+                            <option value="Language Arts">Language Arts</option>
+                            <option value="English">English</option>
+                            <option value="Science">Science</option>
+                            <option value="History">History</option>
+                            <option value="Geography">Geography</option>
+                            <option value="Art">Art</option>
+                            <option value="Music">Music</option>
+                            <option value="Physical Education">Physical Education</option>
+                            <option value="Foreign Language">Foreign Language</option>
+                            <option value="Life Skills">Life Skills</option>
+                            <option value="Bible/Religion">Bible/Religion</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Health">Health</option>
+                            <option value="Drama/Theater">Drama/Theater</option>
+                            <option value="Filipino">Filipino</option>
+                            <option value="Araling Panlipunan">Araling Panlipunan</option>
+                            <option value="Mother Tongue">Mother Tongue</option>
+                            <option value="Values Education">Values Education</option>
+                            <option value="MAPEH">MAPEH</option>
+                            <option value="TLE">TLE (Technology & Livelihood)</option>
+                            <option value="Custom">Custom Subject</option>
+                        </select>
+                        <input type="text" id="custom-subject" placeholder="Enter custom subject name" style="display: none; margin-top: 10px;">
+                    </div>
+                    <div class="form-group">
+                        <label for="grade-level">Grade Level</label>
+                        <select id="grade-level">
+                            <option value="Nursery">Nursery</option>
+                            <option value="Pre-K">Pre-Kindergarten</option>
+                            <option value="K">Kindergarten</option>
+                            <option value="1" selected>Grade 1</option>
+                            <option value="2">Grade 2</option>
+                            <option value="3">Grade 3</option>
+                            <option value="4">Grade 4</option>
+                            <option value="5">Grade 5</option>
+                            <option value="6">Grade 6</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                            <option value="Year 1">Year 1 (UK)</option>
+                            <option value="Year 2">Year 2 (UK)</option>
+                            <option value="Year 3">Year 3 (UK)</option>
+                            <option value="Year 4">Year 4 (UK)</option>
+                            <option value="Year 5">Year 5 (UK)</option>
+                            <option value="Year 6">Year 6 (UK)</option>
+                            <option value="Year 7">Year 7 (UK)</option>
+                            <option value="Year 8">Year 8 (UK)</option>
+                            <option value="Year 9">Year 9 (UK)</option>
+                            <option value="Year 10">Year 10 (UK)</option>
+                            <option value="Year 11">Year 11 (UK)</option>
+                            <option value="Year 12">Year 12 (UK)</option>
+                            <option value="Year 13">Year 13 (UK)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="school-year-start">School Year Start</label>
+                        <select id="school-year-start">
+                            <option value="january">January (Philippines, Australia)</option>
+                            <option value="february">February (Some Asian countries)</option>
+                            <option value="march">March (Japan, South Korea)</option>
+                            <option value="april">April (India, Thailand)</option>
+                            <option value="june">June (Philippines - some schools)</option>
+                            <option value="august">August (Europe, some US states)</option>
+                            <option value="september" selected>September (US, Canada, UK)</option>
+                            <option value="custom">Custom Start Month</option>
+                        </select>
+                        <input type="month" id="custom-start-month" placeholder="Select custom start month" style="display: none; margin-top: 10px;">
+                    </div>
+                    <div class="form-group">
+                        <label for="calendar-system">Calendar System</label>
+                        <select id="calendar-system">
+                            <option value="quarters" selected>4 Quarters (10-12 weeks each)</option>
+                            <option value="semesters">2 Semesters (18-20 weeks each)</option>
+                            <option value="trimesters">3 Trimesters (12-13 weeks each)</option>
+                            <option value="terms">4 Terms (8-10 weeks each)</option>
+                            <option value="custom">Custom Periods</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="calendar-nav">
+                    <button class="quarter-btn" onclick="setQuarter('previous')">← Previous Quarter</button>
+                    <div>
+                        <h3 id="current-quarter">Quarter 1 - September 2025</h3>
+                        <p id="quarter-dates">September 1 - November 30, 2025</p>
+                    </div>
+                    <button class="quarter-btn" onclick="setQuarter('next')">Next Quarter →</button>
+                </div>
+
+                <h2 id="subject-title">Mathematics Curriculum Map</h2>
+
+                <table class="curriculum-table">
+                    <thead>
+                        <tr>
+                            <th><div class="editable" contenteditable="true">Time Period</div></th>
+                            <th><div class="editable" contenteditable="true">Learning Objectives</div></th>
+                            <th><div class="editable" contenteditable="true">Key Concepts & Topics</div></th>
+                            <th><div class="editable" contenteditable="true">Skills & Competencies</div></th>
+                            <th><div class="editable" contenteditable="true">Assessment Methods</div></th>
+                            <th><div class="editable" contenteditable="true">Learning Activities</div></th>
+                            <th><div class="editable" contenteditable="true">Resources & Materials</div></th>
+                            <th><div class="editable" contenteditable="true">Standards Alignment</div></th>
+                        </tr>
+                    </thead>
+                    <tbody id="curriculum-body">
+                        <tr>
+                            <td><strong>September</strong></td>
+                            <td><div class="editable" contenteditable="true">Students will understand number concepts and develop counting skills from 1-20</div></td>
+                            <td><div class="editable" contenteditable="true">Numbers 1-20, Counting sequences, Number recognition, Place value basics</div></td>
+                            <td><div class="editable" contenteditable="true">Count accurately, identify numerals, compare quantities, order numbers</div></td>
+                            <td><div class="editable" contenteditable="true">Diagnostic assessment, number identification checklist, counting fluency test</div></td>
+                            <td><div class="editable" contenteditable="true">Number games, counting songs, manipulative exploration, number line activities</div></td>
+                            <td><div class="editable" contenteditable="true">Counting bears, number cards, math manipulatives, interactive whiteboard</div></td>
+                            <td><div class="editable" contenteditable="true">Common Core K.CC.1-3, TEKS K.2A-B</div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>October</strong></td>
+                            <td><div class="editable" contenteditable="true">Students will understand addition and subtraction concepts within 10</div></td>
+                            <td><div class="editable" contenteditable="true">Addition concepts, Subtraction basics, Number bonds, Story problems</div></td>
+                            <td><div class="editable" contenteditable="true">Add within 10, subtract within 10, solve word problems, explain thinking</div></td>
+                            <td><div class="editable" contenteditable="true">Problem-solving rubric, math journal entries, fact fluency checks</div></td>
+                            <td><div class="editable" contenteditable="true">Story problem theater, hands-on addition/subtraction, math centers</div></td>
+                            <td><div class="editable" contenteditable="true">Ten frames, counters, story problem cards, math journals</div></td>
+                            <td><div class="editable" contenteditable="true">Common Core K.OA.1-2, TEKS K.3A-C</div></td>
+                        </tr>
+                        <tr>
+                            <td><strong>November</strong></td>
+                            <td><div class="editable" contenteditable="true">Students will identify, create, and extend patterns using various attributes</div></td>
+                            <td><div class="editable" contenteditable="true">AB patterns, ABC patterns, Growing patterns, Shape patterns, Color patterns</div></td>
+                            <td><div class="editable" contenteditable="true">Identify patterns, create patterns, extend sequences, describe pattern rules</div></td>
+                            <td><div class="editable" contenteditable="true">Pattern creation portfolio, pattern extension tasks, peer assessment</div></td>
+                            <td><div class="editable" contenteditable="true">Pattern blocks exploration, movement patterns, art pattern creation</div></td>
+                            <td><div class="editable" contenteditable="true">Pattern blocks, colored tiles, music instruments, art supplies</div></td>
+                            <td><div class="editable" contenteditable="true">Common Core K.MD.3, TEKS K.7A</div></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                    <div style="background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 12px; padding: 20px;">
+                        <h3 style="color: #0c5460; margin-bottom: 15px;">📋 Prerequisites</h3>
+                        <div class="editable" contenteditable="true" style="min-height: 80px;">
+                            • Basic number recognition 1-10
+                            • Understanding of more/less concepts
+                            • Fine motor skills for writing
+                            • Ability to follow multi-step directions
+                        </div>
+                    </div>
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 20px;">
+                        <h3 style="color: #495057; margin-bottom: 15px;">🎯 Unit Learning Goals</h3>
+                        <div class="editable" contenteditable="true" style="min-height: 80px;">
+                            • Conceptual Understanding
+                            • Procedural Fluency
+                            • Strategic Competence
+                            • Adaptive Reasoning
+                            • Productive Disposition
+                        </div>
+                    </div>
+                </div>
+
+                <div class="notes-section">
+                    <h3>📝 Teaching Notes</h3>
+                    <div class="editable" contenteditable="true" style="min-height: 100px;">
+                        • Focus on hands-on learning and concrete manipulatives
+                        • Allow extra time for students who need it
+                        • Incorporate movement and games into lessons
+                        • Connect math to real-world situations
+                        • Use visual aids and number lines consistently
+                        • Differentiate instruction based on student readiness
+                        • Encourage mathematical discourse and reasoning
+                    </div>
+                </div>
+
+                <div class="insights-section">
+                    <h3>💡 Curriculum Mapping Strategy Insights</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div>
+                            <div style="padding: 8px 0; border-bottom: 1px solid rgba(12, 84, 96, 0.2);">
+                                <strong>🎯 Learning Objectives Alignment:</strong> Ensure objectives match your key concepts and assessment methods
+                            </div>
+                            <div style="padding: 8px 0; border-bottom: 1px solid rgba(12, 84, 96, 0.2);">
+                                <strong>🧠 Skills & Competencies Focus:</strong> Balance conceptual understanding with practical application skills
+                            </div>
+                            <div style="padding: 8px 0; border-bottom: 1px solid rgba(12, 84, 96, 0.2);">
+                                <strong>📊 Assessment-Activity Connection:</strong> Match assessment methods directly to learning activities
+                            </div>
+                            <div style="padding: 8px 0;">
+                                <strong>📚 Resource-Standards Integration:</strong> Align materials and resources with standards requirements
+                            </div>
+                        </div>
+                        <div>
+                            <div style="padding: 8px 0; border-bottom: 1px solid rgba(12, 84, 96, 0.2);">
+                                <strong>🔗 Cross-Topic Connections:</strong> Link concepts across time periods for deeper understanding
+                            </div>
+                            <div style="padding: 8px 0; border-bottom: 1px solid rgba(12, 84, 96, 0.2);">
+                                <strong>📈 Progressive Complexity:</strong> Build skills systematically from simple to complex applications
+                            </div>
+                            <div style="padding: 8px 0; border-bottom: 1px solid rgba(12, 84, 96, 0.2);">
+                                <strong>🌍 Real-World Applications:</strong> Connect learning activities to authentic, meaningful contexts
+                            </div>
+                            <div style="padding: 8px 0;">
+                                <strong>🔄 Continuous Assessment:</strong> Use multiple assessment methods to track student progress
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                    <button class="btn" onclick="exportToPDF()">📄 Export PDF</button>
+                    <button class="btn btn-secondary" onclick="printMap()">🖨️ Print</button>
+                    <button class="btn btn-secondary" onclick="saveAsTemplate()">💾 Save Template</button>
+                    <button class="btn btn-secondary" onclick="duplicateSubject()">📋 Duplicate Subject</button>
+                </div>
+            </div>
+
+            <!-- Quarter Overview View -->
+            <div id="quarter-view" class="view">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quarter-select" id="period-label">Period</label>
+                        <select id="quarter-select">
+                            <option value="1" selected>Period 1</option>
+                            <option value="2">Period 2</option>
+                            <option value="3">Period 3</option>
+                            <option value="4">Period 4</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="academic-year">Academic Year</label>
+                        <input type="text" id="academic-year" placeholder="e.g., 2025-2026" value="2025-2026">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="country-region" id="country-label">Country/Region</label>
+                        <select id="country-region">
+                            <option value="philippines">Philippines</option>
+                            <option value="usa" selected>United States</option>
+                            <option value="canada">Canada</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="australia">Australia</option>
+                            <option value="singapore">Singapore</option>
+                            <option value="malaysia">Malaysia</option>
+                            <option value="india">India</option>
+                            <option value="japan">Japan</option>
+                            <option value="south-korea">South Korea</option>
+                            <option value="thailand">Thailand</option>
+                            <option value="indonesia">Indonesia</option>
+                            <option value="vietnam">Vietnam</option>
+                            <option value="uae">United Arab Emirates</option>
+                            <option value="saudi-arabia">Saudi Arabia</option>
+                            <option value="qatar">Qatar</option>
+                            <option value="kuwait">Kuwait</option>
+                            <option value="bahrain">Bahrain</option>
+                            <option value="oman">Oman</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="language-interface" id="language-label">Interface Language</label>
+                        <select id="language-interface">
+                            <option value="english" selected>English</option>
+                            <option value="filipino">Filipino/Tagalog</option>
+                            <option value="spanish">Español</option>
+                            <option value="french">Français</option>
+                            <option value="german">Deutsch</option>
+                            <option value="japanese">日本語</option>
+                            <option value="korean">한국어</option>
+                            <option value="chinese">中文</option>
+                            <option value="thai">ไทย</option>
+                            <option value="vietnamese">Tiếng Việt</option>
+                            <option value="malay">Bahasa Melayu</option>
+                            <option value="indonesian">Bahasa Indonesia</option>
+                            <option value="arabic">العربية</option>
+                            <option value="hindi">हिन्दी</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h2 id="quarter-title">Curriculum Map - Grade 1</h2>
+                <h3 id="quarter-subtitle">Quarter 1</h3>
+
+                <div class="subject-row" id="week-headers">
+                    <div><strong>Subject</strong></div>
+                    <div><strong>Textbook</strong></div>
+                    <div><strong>Week 1</strong><br><span class="date-range">Sep 1-5</span></div>
+                    <div><strong>Week 2</strong><br><span class="date-range">Sep 8-12</span></div>
+                    <div><strong>Week 3</strong><br><span class="date-range">Sep 15-19</span></div>
+                    <div><strong>Week 4</strong><br><span class="date-range">Sep 22-26</span></div>
+                    <div><strong>Week 5</strong><br><span class="date-range">Oct 1-3</span></div>
+                    <div><strong>Week 6</strong><br><span class="date-range">Oct 6-10</span></div>
+                    <div><strong>Week 7</strong><br><span class="date-range">Oct 13-17</span></div>
+                    <div><strong>Week 8</strong><br><span class="date-range">Oct 20-24</span></div>
+                    <div><strong>Week 9</strong><br><span class="date-range">Oct 27-31</span></div>
+                    <div><strong>Week 10</strong><br><span class="date-range">Nov 3-7</span></div>
+                </div>
+
+                <div id="subject-rows-container">
+                    <div class="subject-row">
+                        <div class="subject-cell"><strong>Mathematics</strong></div>
+                        <div class="subject-cell editable" contenteditable="true">Saxon Math 1</div>
+                        <div class="subject-cell editable" contenteditable="true">Numbers 1-10</div>
+                        <div class="subject-cell editable" contenteditable="true">Counting to 20</div>
+                        <div class="subject-cell editable" contenteditable="true">Number order</div>
+                        <div class="subject-cell editable" contenteditable="true">Addition intro</div>
+                        <div class="subject-cell editable" contenteditable="true">Addition facts</div>
+                        <div class="subject-cell editable" contenteditable="true">Subtraction intro</div>
+                        <div class="subject-cell editable" contenteditable="true">Number bonds</div>
+                        <div class="subject-cell editable" contenteditable="true">Problem solving</div>
+                        <div class="subject-cell editable" contenteditable="true">Patterns</div>
+                        <div class="subject-cell editable" contenteditable="true">Review & assess</div>
+                    </div>
+
+                    <div class="subject-row">
+                        <div class="subject-cell"><strong>Language Arts</strong></div>
+                        <div class="subject-cell editable" contenteditable="true">All About Reading 1</div>
+                        <div class="subject-cell editable" contenteditable="true">Letter sounds</div>
+                        <div class="subject-cell editable" contenteditable="true">Phonics basics</div>
+                        <div class="subject-cell editable" contenteditable="true">CVC words</div>
+                        <div class="subject-cell editable" contenteditable="true">Sight words</div>
+                        <div class="subject-cell editable" contenteditable="true">Reading fluency</div>
+                        <div class="subject-cell editable" contenteditable="true">Comprehension</div>
+                        <div class="subject-cell editable" contenteditable="true">Writing letters</div>
+                        <div class="subject-cell editable" contenteditable="true">Simple sentences</div>
+                        <div class="subject-cell editable" contenteditable="true">Story writing</div>
+                        <div class="subject-cell editable" contenteditable="true">Reading assessment</div>
+                    </div>
+
+                    <div class="subject-row">
+                        <div class="subject-cell"><strong>Science</strong></div>
+                        <div class="subject-cell editable" contenteditable="true">Apologia Elementary</div>
+                        <div class="subject-cell editable" contenteditable="true">Living things</div>
+                        <div class="subject-cell editable" contenteditable="true">Plants</div>
+                        <div class="subject-cell editable" contenteditable="true">Animals</div>
+                        <div class="subject-cell editable" contenteditable="true">Habitats</div>
+                        <div class="subject-cell editable" contenteditable="true">Weather</div>
+                        <div class="subject-cell editable" contenteditable="true">Seasons</div>
+                        <div class="subject-cell editable" contenteditable="true">Earth science</div>
+                        <div class="subject-cell editable" contenteditable="true">Experiments</div>
+                        <div class="subject-cell editable" contenteditable="true">Nature study</div>
+                        <div class="subject-cell editable" contenteditable="true">Science fair prep</div>
+                    </div>
+
+                    <div class="subject-row">
+                        <div class="subject-cell"><strong>History</strong></div>
+                        <div class="subject-cell editable" contenteditable="true">Story of the World 1</div>
+                        <div class="subject-cell editable" contenteditable="true">Ancient times</div>
+                        <div class="subject-cell editable" contenteditable="true">Early civilizations</div>
+                        <div class="subject-cell editable" contenteditable="true">Egypt</div>
+                        <div class="subject-cell editable" contenteditable="true">Mesopotamia</div>
+                        <div class="subject-cell editable" contenteditable="true">Greece</div>
+                        <div class="subject-cell editable" contenteditable="true">Rome</div>
+                        <div class="subject-cell editable" contenteditable="true">Timeline work</div>
+                        <div class="subject-cell editable" contenteditable="true">Map skills</div>
+                        <div class="subject-cell editable" contenteditable="true">Historical figures</div>
+                        <div class="subject-cell editable" contenteditable="true">Review project</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn" onclick="addSubject()">+ Add Subject</button>
+                    <button class="btn btn-secondary" onclick="exportToPDF()">📄 Export PDF</button>
+                    <button class="btn btn-secondary" onclick="printMap()">🖨️ Print</button>
+                    <button class="btn btn-secondary" onclick="saveAsTemplate()">💾 Save Template</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuarter = 1;
+        let globalCurrentYear = 2025;
+
+        function switchView(view) {
+            // Update nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update views
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(view + '-view').classList.add('active');
+        }
+
+        function setQuarter(direction) {
+            const calendarSystem = document.getElementById('calendar-system').value;
+            let maxPeriods = 4;
+            
+            if (calendarSystem === 'semesters') {
+                maxPeriods = 2;
+            } else if (calendarSystem === 'trimesters') {
+                maxPeriods = 3;
+            } else if (calendarSystem === 'terms') {
+                maxPeriods = 4;
+            }
+            
+            if (direction === 'next') {
+                currentQuarter++;
+                if (currentQuarter > maxPeriods) {
+                    currentQuarter = 1;
+                    globalCurrentYear++;
+                }
+            } else {
+                currentQuarter--;
+                if (currentQuarter < 1) {
+                    currentQuarter = maxPeriods;
+                    globalCurrentYear--;
+                }
+            }
+            updateQuarterDisplay();
+        }
+
+        function updateQuarterDisplay() {
+            const startMonth = document.getElementById('school-year-start').value;
+            const calendarSystem = document.getElementById('calendar-system').value;
+            
+            // Get the starting month index (0-11)
+            const monthMap = {
+                'january': 0, 'february': 1, 'march': 2, 'april': 3,
+                'may': 4, 'june': 5, 'july': 6, 'august': 7,
+                'september': 8, 'october': 9, 'november': 10, 'december': 11
+            };
+            
+            const startMonthIndex = monthMap[startMonth] || 8; // Default to September
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            
+            let periods = {};
+            let maxPeriods = 4;
+            let monthsPerPeriod = 3;
+            let periodName = 'Quarter';
+            let weeksPerPeriod = 10;
+            
+            if (calendarSystem === 'semesters') {
+                maxPeriods = 2;
+                monthsPerPeriod = 6;
+                periodName = 'Semester';
+                weeksPerPeriod = 18;
+            } else if (calendarSystem === 'trimesters') {
+                maxPeriods = 3;
+                monthsPerPeriod = 4;
+                periodName = 'Trimester';
+                weeksPerPeriod = 12;
+            } else if (calendarSystem === 'terms') {
+                maxPeriods = 4;
+                monthsPerPeriod = 3;
+                periodName = 'Term';
+                weeksPerPeriod = 8;
+            }
+            
+            // Update tab name
+            document.getElementById('overview-tab').textContent = `${periodName} Overview`;
+            
+            // Update period selector
+            document.getElementById('period-label').textContent = periodName;
+            const periodSelect = document.getElementById('quarter-select');
+            periodSelect.innerHTML = '';
+            for (let i = 1; i <= maxPeriods; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${periodName} ${i}`;
+                if (i === currentQuarter) option.selected = true;
+                periodSelect.appendChild(option);
+            }
+            
+            // Generate periods with correct month calculation
+            for (let i = 1; i <= maxPeriods; i++) {
+                const months = [];
+                for (let j = 0; j < monthsPerPeriod; j++) {
+                    const monthIndex = (startMonthIndex + (i-1)*monthsPerPeriod + j) % 12;
+                    months.push(monthNames[monthIndex]);
+                }
+                periods[i] = {
+                    name: `${periodName} ${i} - ${months[0]}`,
+                    dates: `${months[0]} - ${months[monthsPerPeriod-1]}`,
+                    months: months, // Use all months for the period
+                    weeks: weeksPerPeriod
+                };
+            }
+
+            // Adjust current period if it exceeds max periods
+            if (currentQuarter > maxPeriods) {
+                currentQuarter = 1;
+            }
+
+            const period = periods[currentQuarter] || periods[1];
+            document.getElementById('current-quarter').textContent = period.name + ' ' + globalCurrentYear;
+            document.getElementById('quarter-dates').textContent = period.dates + ', ' + globalCurrentYear;
+            document.getElementById('quarter-subtitle').textContent = `${periodName} ${currentQuarter}`;
+
+            // Update curriculum table - ensure we have enough rows for the months in this period
+            const tbody = document.getElementById('curriculum-body');
+            let rows = tbody.querySelectorAll('tr');
+            
+            // Determine how many months to show in curriculum table
+            const monthsToShow = period.months.length;
+            
+            // Add or remove rows as needed
+            while (rows.length < monthsToShow) {
+                const newRow = tbody.insertRow();
+                for (let i = 0; i < 8; i++) { // 8 columns
+                    const cell = newRow.insertCell();
+                    if (i === 0) {
+                        cell.innerHTML = '<strong>Month</strong>';
+                    } else {
+                        cell.innerHTML = '<div class="editable" contenteditable="true">Click to edit...</div>';
+                    }
+                }
+            }
+            
+            while (rows.length > monthsToShow) {
+                tbody.deleteRow(rows.length - 1);
+                rows = tbody.querySelectorAll('tr');
+            }
+            
+            // Update month names in curriculum table - THIS IS THE KEY FIX
+            const updatedRows = tbody.querySelectorAll('tr');
+            period.months.forEach((monthName, index) => {
+                if (updatedRows[index]) {
+                    updatedRows[index].cells[0].innerHTML = '<strong>' + monthName + '</strong>';
+                }
+            });
+            
+            // Force update the quarter display text with correct months
+            const currentPeriod = periods[currentQuarter] || periods[1];
+            document.getElementById('current-quarter').textContent = currentPeriod.name + ' ' + globalCurrentYear;
+            document.getElementById('quarter-dates').textContent = currentPeriod.dates + ', ' + globalCurrentYear;
+
+            // Update navigation buttons
+            const prevBtn = document.querySelector('button[onclick="setQuarter(\'previous\')"]');
+            const nextBtn = document.querySelector('button[onclick="setQuarter(\'next\')"]');
+            
+            if (prevBtn) prevBtn.textContent = `← Previous ${periodName}`;
+            if (nextBtn) nextBtn.textContent = `Next ${periodName} →`;
+            
+            // Update overview table headers
+            updateOverviewTable(period.weeks, periodName);
+        }
+        
+        function updateOverviewTable(weeksPerPeriod, periodName) {
+            const headerRow = document.getElementById('week-headers');
+            const subjectRows = document.querySelectorAll('#subject-rows-container .subject-row');
+            
+            // Calculate week dates based on current period and school start
+            const startMonth = document.getElementById('school-year-start').value;
+            const monthMap = {
+                'january': 0, 'february': 1, 'march': 2, 'april': 3,
+                'may': 4, 'june': 5, 'july': 6, 'august': 7,
+                'september': 8, 'october': 9, 'november': 10, 'december': 11
+            };
+            const startMonthIndex = monthMap[startMonth] || 8;
+            
+            // Calculate start date for current period
+            const calendarSystem = document.getElementById('calendar-system').value;
+            let monthsPerPeriod = 3;
+            if (calendarSystem === 'semesters') monthsPerPeriod = 6;
+            else if (calendarSystem === 'trimesters') monthsPerPeriod = 4;
+            else if (calendarSystem === 'terms') monthsPerPeriod = 3;
+            
+            const periodStartMonth = (startMonthIndex + (currentQuarter - 1) * monthsPerPeriod) % 12;
+            const periodStartDate = new Date(globalCurrentYear, periodStartMonth, 1);
+            
+            // Clear existing headers (keep Subject and Textbook)
+            headerRow.innerHTML = `
+                <div><strong>Subject</strong></div>
+                <div><strong>Textbook</strong></div>
+            `;
+            
+            // Add week headers with actual date ranges
+            for (let week = 1; week <= weeksPerPeriod; week++) {
+                const weekStartDate = new Date(periodStartDate);
+                weekStartDate.setDate(weekStartDate.getDate() + (week - 1) * 7);
+                
+                const weekEndDate = new Date(weekStartDate);
+                weekEndDate.setDate(weekEndDate.getDate() + 4); // 5-day school week
+                
+                const startMonth = weekStartDate.toLocaleDateString('en-US', { month: 'short' });
+                const startDay = weekStartDate.getDate();
+                const endMonth = weekEndDate.toLocaleDateString('en-US', { month: 'short' });
+                const endDay = weekEndDate.getDate();
+                
+                const dateRange = startMonth === endMonth ? 
+                    `${startMonth} ${startDay}-${endDay}` : 
+                    `${startMonth} ${startDay}-${endMonth} ${endDay}`;
+                
+                const weekDiv = document.createElement('div');
+                weekDiv.innerHTML = `<strong>Week ${week}</strong><br><span class="date-range">${dateRange}</span>`;
+                headerRow.appendChild(weekDiv);
+            }
+            
+            // Update subject rows to match number of weeks
+            subjectRows.forEach(row => {
+                // Keep first two cells (Subject and Textbook)
+                const subjectCell = row.children[0].cloneNode(true);
+                const textbookCell = row.children[1].cloneNode(true);
+                
+                // Store existing content
+                const existingContent = [];
+                for (let i = 2; i < row.children.length; i++) {
+                    existingContent.push(row.children[i].textContent);
+                }
+                
+                // Clear all cells and rebuild
+                row.innerHTML = '';
+                row.appendChild(subjectCell);
+                row.appendChild(textbookCell);
+                
+                // Add cells for each week
+                for (let week = 1; week <= weeksPerPeriod; week++) {
+                    const weekCell = document.createElement('div');
+                    weekCell.className = 'subject-cell editable';
+                    weekCell.contentEditable = 'true';
+                    // Use existing content if available, otherwise default
+                    weekCell.textContent = existingContent[week - 1] || `Week ${week} content`;
+                    row.appendChild(weekCell);
+                }
+            });
+            
+            // Update CSS grid template
+            const existingStyles = document.querySelectorAll('style[data-grid-style]');
+            existingStyles.forEach(style => style.remove());
+            
+            const style = document.createElement('style');
+            style.setAttribute('data-grid-style', 'true');
+            style.textContent = `
+                .subject-row {
+                    grid-template-columns: 150px 150px repeat(${weeksPerPeriod}, 1fr) !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function addSubject() {
+            const container = document.querySelector('#quarter-view');
+            const lastRow = container.querySelector('.subject-row:last-of-type');
+            
+            const newRow = document.createElement('div');
+            newRow.className = 'subject-row';
+            newRow.innerHTML = `
+                <div class="subject-cell editable" contenteditable="true"><strong>New Subject</strong></div>
+                <div class="subject-cell editable" contenteditable="true">Textbook name</div>
+                <div class="subject-cell editable" contenteditable="true">Week 1 content</div>
+                <div class="subject-cell editable" contenteditable="true">Week 2 content</div>
+                <div class="subject-cell editable" contenteditable="true">Week 3 content</div>
+                <div class="subject-cell editable" contenteditable="true">Week 4 content</div>
+                <div class="subject-cell editable" contenteditable="true">Week 5 content</div>
+                <div class="subject-cell editable" contenteditable="true">Week 6 content</div>
+                <div class="subject-cell editable" contenteditable="true">Week 7 content</div>
+                <div class="subject-cell editable" contenteditable="true">Week 8 content</div>
+                <div class="subject-cell editable" contenteditable="true">Week 9 content</div>
+                <div class="subject-cell editable" contenteditable="true">Week 10 content</div>
+            `;
+            
+            lastRow.insertAdjacentElement('afterend', newRow);
+        }
+
+        // Subject content templates by grade level
+        const subjectTemplates = {
+            'Mathematics': {
+                'K': {
+                    months: [
+                        {
+                            objectives: 'Students will understand number concepts and develop counting skills from 1-10',
+                            content: 'Numbers 1-10, Counting sequences, Number recognition, One-to-one correspondence',
+                            skills: 'Count objects, identify numerals, compare quantities, understand more/less',
+                            assessment: 'Counting assessment, number identification, quantity comparison tasks',
+                            activities: 'Counting games, number songs, manipulative exploration, number hunts',
+                            resources: 'Counting bears, number cards, math manipulatives, number line',
+                            standards: 'Common Core K.CC.1-3, TEKS K.2A-B'
+                        },
+                        {
+                            objectives: 'Students will understand basic addition and subtraction within 5',
+                            content: 'Addition concepts, Subtraction basics, Number bonds to 5, Simple story problems',
+                            skills: 'Add within 5, subtract within 5, solve simple word problems, use manipulatives',
+                            assessment: 'Hands-on problem solving, math journal drawings, fact fluency to 5',
+                            activities: 'Story problem acting, hands-on addition/subtraction, counting bears',
+                            resources: 'Ten frames, counters, simple story cards, math journals',
+                            standards: 'Common Core K.OA.1-2, TEKS K.3A-C'
+                        },
+                        {
+                            objectives: 'Students will identify and create simple patterns and basic shapes',
+                            content: 'AB patterns, Basic shapes (circle, square, triangle), Pattern recognition',
+                            skills: 'Identify patterns, create AB patterns, recognize shapes, describe attributes',
+                            assessment: 'Pattern creation, shape identification, pattern extension tasks',
+                            activities: 'Pattern blocks, shape sorting, movement patterns, art patterns',
+                            resources: 'Pattern blocks, shape cards, colored objects, art supplies',
+                            standards: 'Common Core K.G.1-2, TEKS K.6A'
+                        }
+                    ]
+                },
+                '1': {
+                    months: [
+                        {
+                            objectives: 'Students will understand number concepts and develop counting skills from 1-20',
+                            content: 'Numbers 1-20, Counting sequences, Number recognition, Place value basics',
+                            skills: 'Count accurately, identify numerals, compare quantities, order numbers',
+                            assessment: 'Diagnostic assessment, number identification checklist, counting fluency test',
+                            activities: 'Number games, counting songs, manipulative exploration, number line activities',
+                            resources: 'Counting bears, number cards, math manipulatives, interactive whiteboard',
+                            standards: 'Common Core 1.NBT.1, TEKS 1.2A-B'
+                        },
+                        {
+                            objectives: 'Students will understand addition and subtraction concepts within 10',
+                            content: 'Addition concepts, Subtraction basics, Number bonds, Story problems',
+                            skills: 'Add within 10, subtract within 10, solve word problems, explain thinking',
+                            assessment: 'Problem-solving rubric, math journal entries, fact fluency checks',
+                            activities: 'Story problem theater, hands-on addition/subtraction, math centers',
+                            resources: 'Ten frames, counters, story problem cards, math journals',
+                            standards: 'Common Core 1.OA.1-2, TEKS 1.3A-C'
+                        },
+                        {
+                            objectives: 'Students will identify, create, and extend patterns using various attributes',
+                            content: 'AB patterns, ABC patterns, Growing patterns, Shape patterns, Color patterns',
+                            skills: 'Identify patterns, create patterns, extend sequences, describe pattern rules',
+                            assessment: 'Pattern creation portfolio, pattern extension tasks, peer assessment',
+                            activities: 'Pattern blocks exploration, movement patterns, art pattern creation',
+                            resources: 'Pattern blocks, colored tiles, music instruments, art supplies',
+                            standards: 'Common Core 1.OA.5, TEKS 1.5A'
+                        }
+                    ]
+                },
+                '2': {
+                    months: [
+                        {
+                            objectives: 'Students will understand place value and number relationships to 100',
+                            content: 'Place value to 100, Skip counting, Number patterns, Comparing numbers',
+                            skills: 'Identify place value, compare 2-digit numbers, skip count by 2s, 5s, 10s',
+                            assessment: 'Place value assessment, number comparison tasks, skip counting fluency',
+                            activities: 'Base-ten blocks, number charts, counting games, place value mats',
+                            resources: 'Base-ten blocks, hundreds chart, place value cards, number lines',
+                            standards: 'Common Core 2.NBT.1-4, TEKS 2.2A-E'
+                        },
+                        {
+                            objectives: 'Students will add and subtract within 100 using various strategies',
+                            content: 'Two-digit addition, Two-digit subtraction, Mental math strategies, Word problems',
+                            skills: 'Add/subtract 2-digit numbers, use mental math, solve multi-step problems',
+                            assessment: 'Computation tests, strategy explanations, problem-solving rubrics',
+                            activities: 'Math talks, strategy sharing, real-world problem solving',
+                            resources: 'Base-ten blocks, number lines, strategy posters, word problem cards',
+                            standards: 'Common Core 2.NBT.5-9, TEKS 2.4A-F'
+                        },
+                        {
+                            objectives: 'Students will understand measurement concepts and geometric shapes',
+                            content: 'Length measurement, Time to hour/half-hour, 2D and 3D shapes, Data graphs',
+                            skills: 'Measure length, tell time, identify shapes, create and read graphs',
+                            assessment: 'Measurement tasks, time assessments, shape identification, graph creation',
+                            activities: 'Measurement centers, clock practice, shape hunts, data collection',
+                            resources: 'Rulers, clocks, shape manipulatives, graphing materials',
+                            standards: 'Common Core 2.MD.1-10, TEKS 2.9A-G'
+                        }
+                    ]
+                },
+                '3': {
+                    months: [
+                        {
+                            objectives: 'Students will understand multiplication and division concepts',
+                            content: 'Multiplication as repeated addition, Division as sharing, Arrays, Fact families',
+                            skills: 'Multiply within 100, divide within 100, use arrays, understand relationships',
+                            assessment: 'Fact fluency tests, array problems, word problem assessments',
+                            activities: 'Array investigations, fact family games, multiplication stories',
+                            resources: 'Multiplication charts, array cards, manipulatives, fact family triangles',
+                            standards: 'Common Core 3.OA.1-7, TEKS 3.4A-K'
+                        },
+                        {
+                            objectives: 'Students will understand fractions as parts of a whole',
+                            content: 'Unit fractions, Fraction notation, Comparing fractions, Equivalent fractions',
+                            skills: 'Identify fractions, compare unit fractions, understand equivalence',
+                            assessment: 'Fraction identification, comparison tasks, equivalence problems',
+                            activities: 'Fraction circles, pizza fractions, fraction number lines',
+                            resources: 'Fraction manipulatives, fraction circles, number lines, visual models',
+                            standards: 'Common Core 3.NF.1-3, TEKS 3.3A-H'
+                        },
+                        {
+                            objectives: 'Students will solve problems involving measurement and data',
+                            content: 'Area and perimeter, Mass and volume, Time intervals, Picture graphs',
+                            skills: 'Calculate area/perimeter, measure mass/volume, solve time problems',
+                            assessment: 'Measurement projects, time problem solving, data interpretation',
+                            activities: 'Area investigations, measurement labs, time problem scenarios',
+                            resources: 'Grid paper, measuring tools, scales, containers, graph templates',
+                            standards: 'Common Core 3.MD.1-8, TEKS 3.7A-E'
+                        }
+                    ]
+                },
+                '4': {
+                    months: [
+                        {
+                            objectives: 'Students will master multi-digit arithmetic and understand place value to millions',
+                            content: 'Multi-digit multiplication, Long division, Place value to millions, Rounding',
+                            skills: 'Multiply 4-digit numbers, divide with remainders, round to any place, estimate',
+                            assessment: 'Computation fluency tests, place value assessments, estimation tasks',
+                            activities: 'Real-world problem solving, estimation games, place value investigations',
+                            resources: 'Place value charts, calculators for checking, estimation materials',
+                            standards: 'Common Core 4.NBT.1-6, TEKS 4.2A-H'
+                        },
+                        {
+                            objectives: 'Students will work with equivalent fractions and decimal notation',
+                            content: 'Equivalent fractions, Adding/subtracting fractions, Decimal notation, Comparing decimals',
+                            skills: 'Find equivalent fractions, add/subtract like fractions, read decimals, compare',
+                            assessment: 'Fraction equivalence tests, decimal reading assessments, comparison tasks',
+                            activities: 'Fraction wall activities, decimal place value games, real-world applications',
+                            resources: 'Fraction strips, decimal grids, number lines, measuring tools',
+                            standards: 'Common Core 4.NF.1-7, TEKS 4.3A-G'
+                        },
+                        {
+                            objectives: 'Students will analyze geometric figures and solve measurement problems',
+                            content: 'Angles and angle measurement, Parallel and perpendicular lines, Area formulas',
+                            skills: 'Measure angles, identify line relationships, calculate area and perimeter',
+                            assessment: 'Geometry projects, angle measurement tasks, area calculation problems',
+                            activities: 'Angle hunts, geometric art projects, measurement investigations',
+                            resources: 'Protractors, rulers, geometric shapes, grid paper, measuring tools',
+                            standards: 'Common Core 4.G.1-3, TEKS 4.6A-D'
+                        }
+                    ]
+                },
+                '5': {
+                    months: [
+                        {
+                            objectives: 'Students will perform operations with decimals and understand their place value',
+                            content: 'Decimal operations, Place value to thousandths, Powers of 10, Scientific notation intro',
+                            skills: 'Add/subtract/multiply/divide decimals, understand decimal place value, use powers of 10',
+                            assessment: 'Decimal computation tests, place value assessments, real-world problem solving',
+                            activities: 'Decimal investigations, money problems, measurement with decimals',
+                            resources: 'Decimal grids, calculators, measuring tools, real-world examples',
+                            standards: 'Common Core 5.NBT.1-7, TEKS 5.2A-C'
+                        },
+                        {
+                            objectives: 'Students will add, subtract, multiply, and divide fractions',
+                            content: 'Adding/subtracting unlike fractions, Multiplying fractions, Dividing fractions, Mixed numbers',
+                            skills: 'Operate with fractions, convert between forms, solve fraction word problems',
+                            assessment: 'Fraction operation tests, word problem assessments, conceptual understanding tasks',
+                            activities: 'Cooking with fractions, fraction art projects, real-world applications',
+                            resources: 'Fraction manipulatives, measuring cups, recipe cards, visual models',
+                            standards: 'Common Core 5.NF.1-7, TEKS 5.3A-K'
+                        },
+                        {
+                            objectives: 'Students will understand volume concepts and coordinate geometry',
+                            content: 'Volume of rectangular prisms, Coordinate plane, Graphing points, Patterns in coordinates',
+                            skills: 'Calculate volume, plot points, identify coordinate patterns, solve geometric problems',
+                            assessment: 'Volume calculation projects, coordinate graphing tasks, pattern recognition',
+                            activities: 'Building with unit cubes, coordinate art, treasure map activities',
+                            resources: 'Unit cubes, coordinate grids, graphing materials, 3D models',
+                            standards: 'Common Core 5.G.1-2, TEKS 5.6A-B'
+                        }
+                    ]
+                },
+                '6': {
+                    months: [
+                        {
+                            objectives: 'Students will understand ratios, rates, and proportional relationships',
+                            content: 'Ratios and rates, Unit rates, Proportional relationships, Percent concepts',
+                            skills: 'Find unit rates, solve proportion problems, understand percent, compare ratios',
+                            assessment: 'Ratio and rate problems, proportion assessments, percent applications',
+                            activities: 'Recipe scaling, comparison shopping, sports statistics analysis',
+                            resources: 'Ratio tables, calculators, real-world data, measurement tools',
+                            standards: 'Common Core 6.RP.1-3, TEKS 6.4A-H'
+                        },
+                        {
+                            objectives: 'Students will compute with positive and negative rational numbers',
+                            content: 'Negative numbers, Integer operations, Rational number operations, Number line work',
+                            skills: 'Add/subtract/multiply/divide integers, work with rational numbers, use number lines',
+                            assessment: 'Integer operation tests, rational number assessments, real-world applications',
+                            activities: 'Temperature problems, elevation activities, financial literacy projects',
+                            resources: 'Number lines, integer chips, thermometers, financial examples',
+                            standards: 'Common Core 6.NS.5-8, TEKS 6.3A-E'
+                        },
+                        {
+                            objectives: 'Students will write and solve algebraic expressions and equations',
+                            content: 'Algebraic expressions, One-step equations, Inequalities, Variables and constants',
+                            skills: 'Write expressions, solve equations, graph inequalities, identify variables',
+                            assessment: 'Expression writing tasks, equation solving tests, inequality graphing',
+                            activities: 'Algebra tiles activities, balance scale equations, real-world modeling',
+                            resources: 'Algebra tiles, balance scales, graphing materials, equation mats',
+                            standards: 'Common Core 6.EE.1-9, TEKS 6.7A-D'
+                        }
+                    ]
+                }
+            },
+            'Language Arts': {
+                'K': {
+                    months: [
+                        {
+                            objectives: 'Students will recognize letters and understand that letters represent sounds',
+                            content: 'Letter recognition, Letter sounds, Print awareness, Phonemic awareness',
+                            skills: 'Identify letters, match sounds to letters, understand print concepts',
+                            assessment: 'Letter identification checklist, sound recognition tasks',
+                            activities: 'Alphabet songs, letter tracing, sound games, picture books',
+                            resources: 'Alphabet cards, magnetic letters, picture books, audio recordings',
+                            standards: 'Common Core K.RF.1-3, TEKS K.2A-F'
+                        },
+                        {
+                            objectives: 'Students will blend sounds to read simple words and write letters',
+                            content: 'CVC words, Blending sounds, Letter formation, High-frequency words',
+                            skills: 'Blend sounds, decode simple words, write letters, recognize sight words',
+                            assessment: 'Word reading assessment, letter writing samples, sight word tests',
+                            activities: 'Word building games, writing practice, sight word activities',
+                            resources: 'Letter tiles, writing materials, sight word cards, decodable books',
+                            standards: 'Common Core K.RF.2-4, TEKS K.2G-I'
+                        },
+                        {
+                            objectives: 'Students will understand story elements and express ideas through drawing and writing',
+                            content: 'Story elements, Characters, Beginning/middle/end, Drawing and writing',
+                            skills: 'Identify story parts, retell stories, draw pictures, write simple words',
+                            assessment: 'Story retelling, drawing assessments, writing samples',
+                            activities: 'Story time, picture drawing, simple writing, story sequencing',
+                            resources: 'Picture books, drawing materials, story cards, writing journals',
+                            standards: 'Common Core K.RL.1-3, TEKS K.6A-C'
+                        }
+                    ]
+                },
+                '1': {
+                    months: [
+                        {
+                            objectives: 'Students will decode words using phonics skills and read with fluency',
+                            content: 'Phonics patterns, Word families, Reading fluency, Comprehension strategies',
+                            skills: 'Decode unfamiliar words, read with expression, understand main ideas',
+                            assessment: 'Phonics assessments, fluency checks, comprehension questions',
+                            activities: 'Guided reading, phonics games, fluency practice, book discussions',
+                            resources: 'Leveled readers, phonics materials, fluency passages, comprehension worksheets',
+                            standards: 'Common Core 1.RF.2-4, TEKS 1.2A-E'
+                        },
+                        {
+                            objectives: 'Students will write complete sentences and short stories with proper conventions',
+                            content: 'Sentence structure, Capitalization, Punctuation, Story writing',
+                            skills: 'Write complete sentences, use proper capitalization and punctuation, organize ideas',
+                            assessment: 'Writing samples, grammar assessments, story evaluations',
+                            activities: 'Daily writing, grammar practice, story creation, peer sharing',
+                            resources: 'Writing journals, grammar charts, story templates, editing checklists',
+                            standards: 'Common Core 1.W.1-3, TEKS 1.11A-D'
+                        },
+                        {
+                            objectives: 'Students will analyze characters and events in stories and make connections',
+                            content: 'Character analysis, Plot events, Making connections, Comparing texts',
+                            skills: 'Describe characters, sequence events, make text connections, compare stories',
+                            assessment: 'Character maps, story sequence activities, connection journals',
+                            activities: 'Character studies, story mapping, text-to-self connections, book comparisons',
+                            resources: 'Graphic organizers, comparison charts, connection templates, diverse literature',
+                            standards: 'Common Core 1.RL.1-7, TEKS 1.6A-H'
+                        }
+                    ]
+                },
+                '2': {
+                    months: [
+                        {
+                            objectives: 'Students will read grade-level texts with accuracy and understanding',
+                            content: 'Advanced phonics, Multi-syllable words, Reading comprehension, Vocabulary development',
+                            skills: 'Decode complex words, understand text meaning, use context clues, build vocabulary',
+                            assessment: 'Reading level assessments, comprehension tests, vocabulary quizzes',
+                            activities: 'Independent reading, vocabulary games, comprehension discussions, word study',
+                            resources: 'Chapter books, vocabulary cards, comprehension passages, word study materials',
+                            standards: 'Common Core 2.RF.3-4, TEKS 2.2A-F'
+                        },
+                        {
+                            objectives: 'Students will write informative and narrative texts with clear organization',
+                            content: 'Paragraph structure, Informative writing, Narrative writing, Editing and revising',
+                            skills: 'Organize ideas in paragraphs, write to inform and entertain, edit for clarity',
+                            assessment: 'Writing portfolios, informative writing rubrics, narrative assessments',
+                            activities: 'Research projects, story writing, peer editing, publishing celebrations',
+                            resources: 'Writing templates, research materials, editing tools, publishing supplies',
+                            standards: 'Common Core 2.W.1-3, TEKS 2.11A-E'
+                        },
+                        {
+                            objectives: 'Students will compare and contrast texts and analyze author\'s purpose',
+                            content: 'Text comparison, Author\'s purpose, Theme identification, Literary elements',
+                            skills: 'Compare different texts, identify why authors write, recognize themes, analyze elements',
+                            assessment: 'Comparison charts, author purpose activities, theme discussions',
+                            activities: 'Text comparisons, author studies, theme explorations, literary analysis',
+                            resources: 'Comparison organizers, author information, theme charts, literary texts',
+                            standards: 'Common Core 2.RL.2-9, TEKS 2.6A-I'
+                        }
+                    ]
+                },
+                '3': {
+                    months: [
+                        {
+                            objectives: 'Students will read complex texts and determine main ideas and supporting details',
+                            content: 'Complex texts, Main idea, Supporting details, Inferencing, Critical thinking',
+                            skills: 'Identify main ideas, find supporting details, make inferences, think critically',
+                            assessment: 'Main idea assessments, inference activities, critical thinking tasks',
+                            activities: 'Text analysis, inference games, discussion groups, critical thinking exercises',
+                            resources: 'Complex texts, graphic organizers, inference materials, discussion guides',
+                            standards: 'Common Core 3.RI.1-3, TEKS 3.6A-H'
+                        },
+                        {
+                            objectives: 'Students will write multi-paragraph compositions with clear thesis and support',
+                            content: 'Multi-paragraph writing, Thesis statements, Supporting evidence, Research skills',
+                            skills: 'Write organized compositions, develop thesis statements, support with evidence, conduct research',
+                            assessment: 'Multi-paragraph rubrics, thesis evaluations, research project assessments',
+                            activities: 'Essay writing, research projects, evidence gathering, peer reviews',
+                            resources: 'Essay templates, research databases, citation guides, writing rubrics',
+                            standards: 'Common Core 3.W.1-4, TEKS 3.11A-E'
+                        },
+                        {
+                            objectives: 'Students will analyze literary devices and evaluate different perspectives',
+                            content: 'Literary devices, Point of view, Character development, Theme analysis',
+                            skills: 'Identify literary devices, understand different viewpoints, analyze character growth, explore themes',
+                            assessment: 'Literary analysis projects, perspective discussions, character studies',
+                            activities: 'Device identification, perspective activities, character analysis, theme exploration',
+                            resources: 'Literary texts, analysis templates, perspective guides, character charts',
+                            standards: 'Common Core 3.RL.3-6, TEKS 3.6A-I'
+                        }
+                    ]
+                },
+                '4': {
+                    months: [
+                        {
+                            objectives: 'Students will analyze text structure and author\'s craft in various genres',
+                            content: 'Text structures, Author\'s purpose, Genre characteristics, Compare/contrast texts',
+                            skills: 'Identify text structures, analyze author\'s craft, distinguish genres, compare texts',
+                            assessment: 'Text structure analysis, author study projects, genre comparison tasks',
+                            activities: 'Genre exploration, author studies, text structure mapping, comparative reading',
+                            resources: 'Various genre texts, text structure charts, author biographies, comparison organizers',
+                            standards: 'Common Core 4.RI.5-9, TEKS 4.6A-I'
+                        },
+                        {
+                            objectives: 'Students will write opinion pieces and informational texts with evidence',
+                            content: 'Opinion writing, Informational writing, Evidence and examples, Text organization',
+                            skills: 'State opinions clearly, organize information logically, support with evidence, revise for clarity',
+                            assessment: 'Opinion writing rubrics, informational text assessments, evidence evaluation',
+                            activities: 'Debate preparation, research reports, persuasive letters, informational brochures',
+                            resources: 'Opinion writing frames, research materials, evidence charts, revision checklists',
+                            standards: 'Common Core 4.W.1-4, TEKS 4.11A-E'
+                        },
+                        {
+                            objectives: 'Students will determine themes and analyze character development in literature',
+                            content: 'Theme identification, Character analysis, Plot development, Literary connections',
+                            skills: 'Determine themes, trace character development, analyze plot structure, make connections',
+                            assessment: 'Theme analysis projects, character development charts, plot diagrams',
+                            activities: 'Literature circles, character studies, theme discussions, plot mapping',
+                            resources: 'Chapter books, character analysis templates, theme charts, plot diagrams',
+                            standards: 'Common Core 4.RL.1-9, TEKS 4.6A-I'
+                        }
+                    ]
+                },
+                '5': {
+                    months: [
+                        {
+                            objectives: 'Students will analyze multiple accounts of events and compare different perspectives',
+                            content: 'Multiple perspectives, Primary/secondary sources, Point of view analysis, Historical context',
+                            skills: 'Compare accounts, analyze perspectives, evaluate sources, understand historical context',
+                            assessment: 'Perspective comparison projects, source analysis tasks, historical investigations',
+                            activities: 'Historical document analysis, perspective debates, timeline creation, source evaluation',
+                            resources: 'Primary sources, historical documents, perspective charts, timeline materials',
+                            standards: 'Common Core 5.RI.6-9, TEKS 5.6A-I'
+                        },
+                        {
+                            objectives: 'Students will write research-based essays with proper citations and organization',
+                            content: 'Research writing, Citation formats, Essay organization, Revision strategies',
+                            skills: 'Conduct research, cite sources properly, organize essays logically, revise effectively',
+                            assessment: 'Research essay rubrics, citation accuracy checks, organization evaluations',
+                            activities: 'Research projects, citation practice, essay workshops, peer editing sessions',
+                            resources: 'Research databases, citation guides, essay templates, revision checklists',
+                            standards: 'Common Core 5.W.1-4, TEKS 5.11A-E'
+                        },
+                        {
+                            objectives: 'Students will analyze how authors develop themes through literary elements',
+                            content: 'Theme development, Literary elements, Symbolism, Author\'s message',
+                            skills: 'Analyze theme development, identify literary elements, interpret symbolism, understand messages',
+                            assessment: 'Literary analysis essays, theme development projects, symbolism identification',
+                            activities: 'Novel studies, literary analysis discussions, symbolism exploration, author message debates',
+                            resources: 'Novels, literary analysis guides, symbolism charts, discussion protocols',
+                            standards: 'Common Core 5.RL.2-9, TEKS 5.6A-I'
+                        }
+                    ]
+                },
+                '6': {
+                    months: [
+                        {
+                            objectives: 'Students will evaluate arguments and analyze how authors support claims',
+                            content: 'Argument analysis, Evidence evaluation, Claim and support, Bias identification',
+                            skills: 'Evaluate arguments, assess evidence quality, identify bias, analyze reasoning',
+                            assessment: 'Argument analysis projects, evidence evaluation tasks, bias identification exercises',
+                            activities: 'Debate analysis, editorial evaluation, argument mapping, critical reading',
+                            resources: 'Argumentative texts, evaluation rubrics, bias detection guides, argument maps',
+                            standards: 'Common Core 6.RI.8-9, TEKS 6.6A-I'
+                        },
+                        {
+                            objectives: 'Students will write argumentative essays with clear claims and counterclaims',
+                            content: 'Argumentative writing, Claims and counterclaims, Evidence integration, Persuasive techniques',
+                            skills: 'Develop clear arguments, address counterclaims, integrate evidence, use persuasive techniques',
+                            assessment: 'Argumentative essay rubrics, claim development assessments, evidence integration checks',
+                            activities: 'Debate preparation, argumentative essay writing, evidence gathering, persuasion analysis',
+                            resources: 'Argument templates, evidence organizers, persuasion guides, debate materials',
+                            standards: 'Common Core 6.W.1-4, TEKS 6.11A-E'
+                        },
+                        {
+                            objectives: 'Students will analyze how plot development and character interactions advance themes',
+                            content: 'Plot analysis, Character interactions, Theme development, Literary techniques',
+                            skills: 'Analyze plot structure, examine character relationships, trace theme development, identify techniques',
+                            assessment: 'Plot analysis projects, character relationship maps, theme development essays',
+                            activities: 'Novel analysis, character interaction studies, theme tracking, literary technique identification',
+                            resources: 'Young adult novels, plot diagrams, character maps, theme trackers',
+                            standards: 'Common Core 6.RL.2-5, TEKS 6.6A-I'
+                        }
+                    ]
+                }
+            },
+            'Science': {
+                'K': {
+                    months: [
+                        {
+                            objectives: 'Students will explore the properties of objects and materials',
+                            content: 'Object properties, Materials, Sorting and classifying, Simple observations',
+                            skills: 'Observe, describe, sort, classify, compare properties',
+                            assessment: 'Property sorting activities, observation drawings, classification tasks',
+                            activities: 'Material exploration, sorting games, texture investigations, color studies',
+                            resources: 'Various objects, magnifying glasses, sorting trays, observation journals',
+                            standards: 'NGSS K-PS1-1, TEKS K.5A-B'
+                        },
+                        {
+                            objectives: 'Students will understand that plants and animals have basic needs',
+                            content: 'Living vs non-living, Basic needs of plants and animals, Life cycles',
+                            skills: 'Identify living things, describe basic needs, observe life cycles',
+                            assessment: 'Living/non-living sort, needs identification, life cycle sequencing',
+                            activities: 'Nature walks, plant growing, animal observation, life cycle activities',
+                            resources: 'Seeds, plants, animal pictures, life cycle cards, observation tools',
+                            standards: 'NGSS K-LS1-1, TEKS K.10A-B'
+                        },
+                        {
+                            objectives: 'Students will observe and describe weather patterns and seasonal changes',
+                            content: 'Weather observations, Seasons, Weather tools, Daily weather patterns',
+                            skills: 'Observe weather, describe patterns, use simple tools, record data',
+                            assessment: 'Weather journals, seasonal comparisons, pattern identification',
+                            activities: 'Daily weather observations, seasonal activities, weather tool exploration',
+                            resources: 'Weather charts, thermometers, rain gauges, seasonal pictures',
+                            standards: 'NGSS K-ESS2-1, TEKS K.8A-B'
+                        }
+                    ]
+                },
+                '1': {
+                    months: [
+                        {
+                            objectives: 'Students will investigate light and sound as forms of energy',
+                            content: 'Light sources, Sound sources, Properties of light and sound, Energy concepts',
+                            skills: 'Identify sources, describe properties, investigate effects, make observations',
+                            assessment: 'Light and sound investigations, property descriptions, source identification',
+                            activities: 'Shadow experiments, sound investigations, light source exploration',
+                            resources: 'Flashlights, mirrors, musical instruments, shadow materials',
+                            standards: 'NGSS 1-PS4-1, TEKS 1.6A-B'
+                        },
+                        {
+                            objectives: 'Students will understand how plants and animals meet their needs in their habitats',
+                            content: 'Animal habitats, Plant needs, Adaptations, Survival strategies',
+                            skills: 'Describe habitats, explain adaptations, connect needs to environment',
+                            assessment: 'Habitat matching, adaptation explanations, survival strategy discussions',
+                            activities: 'Habitat dioramas, adaptation research, animal behavior studies',
+                            resources: 'Habitat pictures, animal models, research materials, craft supplies',
+                            standards: 'NGSS 1-LS1-1, TEKS 1.9A-C'
+                        },
+                        {
+                            objectives: 'Students will observe and predict patterns in the natural world',
+                            content: 'Seasonal patterns, Day/night cycles, Moon phases, Natural patterns',
+                            skills: 'Observe patterns, make predictions, record observations, identify cycles',
+                            assessment: 'Pattern journals, prediction activities, cycle identification',
+                            activities: 'Sky observations, seasonal tracking, pattern investigations',
+                            resources: 'Observation charts, calendars, moon phase cards, pattern materials',
+                            standards: 'NGSS 1-ESS1-1, TEKS 1.8A-C'
+                        }
+                    ]
+                },
+                '2': {
+                    months: [
+                        {
+                            objectives: 'Students will investigate the properties of matter and materials',
+                            content: 'States of matter, Material properties, Changes in matter, Simple mixtures',
+                            skills: 'Classify matter, describe properties, observe changes, create mixtures',
+                            assessment: 'Matter classification, property testing, change observations',
+                            activities: 'Matter experiments, property investigations, mixture activities',
+                            resources: 'Various materials, measuring tools, containers, observation sheets',
+                            standards: 'NGSS 2-PS1-1, TEKS 2.5A-D'
+                        },
+                        {
+                            objectives: 'Students will explore plant and animal life cycles and diversity',
+                            content: 'Life cycles, Plant diversity, Animal diversity, Growth and development',
+                            skills: 'Compare life cycles, identify diversity, track growth, observe development',
+                            assessment: 'Life cycle diagrams, diversity comparisons, growth tracking',
+                            activities: 'Life cycle studies, diversity exploration, growth experiments',
+                            resources: 'Life cycle materials, diverse specimens, growth charts, observation tools',
+                            standards: 'NGSS 2-LS4-1, TEKS 2.10A-C'
+                        },
+                        {
+                            objectives: 'Students will understand Earth\'s land and water features',
+                            content: 'Landforms, Water bodies, Maps and models, Earth materials',
+                            skills: 'Identify features, use maps, create models, describe materials',
+                            assessment: 'Feature identification, map activities, model creation',
+                            activities: 'Landform models, map exploration, Earth material investigations',
+                            resources: 'Maps, modeling materials, rock samples, landform pictures',
+                            standards: 'NGSS 2-ESS1-1, TEKS 2.7A-C'
+                        }
+                    ]
+                },
+                '3': {
+                    months: [
+                        {
+                            objectives: 'Students will investigate forces and motion in everyday life',
+                            content: 'Types of forces, Motion patterns, Cause and effect, Simple machines',
+                            skills: 'Identify forces, describe motion, explain cause/effect, use simple machines',
+                            assessment: 'Force investigations, motion experiments, simple machine projects',
+                            activities: 'Force and motion labs, simple machine exploration, cause/effect studies',
+                            resources: 'Simple machines, motion materials, force meters, experiment supplies',
+                            standards: 'NGSS 3-PS2-1, TEKS 3.6A-C'
+                        },
+                        {
+                            objectives: 'Students will explore how organisms survive in their environments',
+                            content: 'Environmental adaptations, Survival traits, Organism interactions, Food webs',
+                            skills: 'Analyze adaptations, explain survival, describe interactions, create food webs',
+                            assessment: 'Adaptation analysis, survival explanations, food web construction',
+                            activities: 'Adaptation research, survival simulations, ecosystem studies',
+                            resources: 'Organism pictures, research materials, food web templates, ecosystem models',
+                            standards: 'NGSS 3-LS4-3, TEKS 3.9A-C'
+                        },
+                        {
+                            objectives: 'Students will understand weather patterns and climate',
+                            content: 'Weather vs climate, Weather patterns, Climate factors, Weather prediction',
+                            skills: 'Distinguish weather/climate, identify patterns, analyze factors, make predictions',
+                            assessment: 'Weather/climate comparisons, pattern analysis, prediction activities',
+                            activities: 'Weather tracking, climate research, prediction projects',
+                            resources: 'Weather instruments, climate data, tracking sheets, prediction tools',
+                            standards: 'NGSS 3-ESS2-1, TEKS 3.8A-D'
+                        }
+                    ]
+                }
+            },
+            'English': {
+                months: [
+                    {
+                        objectives: 'Students will develop foundational reading and writing skills',
+                        content: 'Phonics, Vocabulary, Reading comprehension, Basic writing',
+                        skills: 'Decode words, understand vocabulary, comprehend texts, write sentences',
+                        assessment: 'Reading assessments, vocabulary tests, writing samples',
+                        activities: 'Guided reading, vocabulary games, writing practice, comprehension activities',
+                        resources: 'Leveled readers, vocabulary cards, writing materials, comprehension worksheets',
+                        standards: 'Common Core ELA standards'
+                    },
+                    {
+                        objectives: 'Students will analyze literature and improve writing skills',
+                        content: 'Literary analysis, Grammar, Writing process, Speaking and listening',
+                        skills: 'Analyze texts, apply grammar rules, follow writing process, communicate effectively',
+                        assessment: 'Literary analysis, grammar tests, writing portfolios, presentations',
+                        activities: 'Literature discussions, grammar practice, writing workshops, presentations',
+                        resources: 'Literature texts, grammar books, writing guides, presentation tools',
+                        standards: 'Common Core ELA standards'
+                    },
+                    {
+                        objectives: 'Students will develop advanced communication and critical thinking skills',
+                        content: 'Critical reading, Advanced writing, Research skills, Media literacy',
+                        skills: 'Think critically, write persuasively, conduct research, analyze media',
+                        assessment: 'Critical essays, research projects, media analysis, debates',
+                        activities: 'Critical reading, research projects, media analysis, debate activities',
+                        resources: 'Complex texts, research databases, media examples, debate materials',
+                        standards: 'Common Core ELA standards'
+                    }
+                ]
+            },
+            'History': {
+                months: [
+                    {
+                        question: 'How do we learn about the past?',
+                        content: 'Primary sources, Artifacts, Timeline concepts',
+                        skills: 'Investigate, sequence, analyze, interpret',
+                        assessment: 'Timeline creation, artifact analysis',
+                        activities: 'Historical detective work, family history project'
+                    },
+                    {
+                        question: 'How did early civilizations live?',
+                        content: 'Ancient civilizations, Daily life, Inventions',
+                        skills: 'Compare, contrast, evaluate, synthesize',
+                        assessment: 'Civilization comparison chart, invention presentation',
+                        activities: 'Ancient culture fair, historical role-play'
+                    },
+                    {
+                        question: 'How do cultures shape communities?',
+                        content: 'Traditions, Customs, Cultural exchange',
+                        skills: 'Analyze, appreciate, connect, respect',
+                        assessment: 'Cultural presentation, tradition research',
+                        activities: 'Cultural celebration, community helper interviews'
+                    }
+                ]
+            },
+            'Filipino': {
+                months: [
+                    {
+                        question: 'Paano natin ginagamit ang wika sa pang-araw-araw?',
+                        content: 'Mga tunog, Mga titik, Pagbasa ng mga salita',
+                        skills: 'Magbasa, magsulat, makipag-usap, makinig',
+                        assessment: 'Pagsusulit sa pagbasa, pagsulat ng mga salita',
+                        activities: 'Mga laro sa wika, pagkanta, pagguhit ng mga titik'
+                    },
+                    {
+                        question: 'Paano natin binubuo ang mga pangungusap?',
+                        content: 'Mga pangngalan, Mga pandiwa, Mga pang-uri',
+                        skills: 'Kilalanin, gamitin, bumuo, ayusin',
+                        assessment: 'Paggawa ng mga pangungusap, pagkilala sa bahagi ng pananalita',
+                        activities: 'Mga laro sa gramatika, pagsulat ng mga kwento'
+                    },
+                    {
+                        question: 'Paano natin naiintindihan ang mga kwento?',
+                        content: 'Mga tauhan, Banghay, Tagpuan, Tema',
+                        skills: 'Unawain, ikwento, hulaan, buuin',
+                        assessment: 'Pagkukuwento, pagsagot sa mga tanong',
+                        activities: 'Pagbabasa ng mga alamat, paggawa ng sariling kwento'
+                    }
+                ]
+            },
+            'Art': {
+                months: [
+                    {
+                        question: 'How do colors and shapes create meaning?',
+                        content: 'Primary colors, Basic shapes, Line types',
+                        skills: 'Mix, create, identify, express',
+                        assessment: 'Color wheel creation, shape artwork',
+                        activities: 'Color mixing experiments, shape collages, line drawings'
+                    },
+                    {
+                        question: 'How do artists tell stories through art?',
+                        content: 'Visual storytelling, Composition, Art elements',
+                        skills: 'Compose, arrange, balance, communicate',
+                        assessment: 'Story illustration project, art critique',
+                        activities: 'Storyboard creation, mixed media projects'
+                    },
+                    {
+                        question: 'How does art reflect culture and history?',
+                        content: 'Art styles, Cultural art, Historical periods',
+                        skills: 'Analyze, appreciate, connect, create',
+                        assessment: 'Cultural art presentation, historical art recreation',
+                        activities: 'Museum virtual tours, cultural art projects'
+                    }
+                ]
+            }
+        };
+
+        // Handle custom subject input and dynamic content loading
+        document.getElementById('subject-name').addEventListener('change', function() {
+            const customInput = document.getElementById('custom-subject');
+            if (this.value === 'Custom') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+                document.getElementById('subject-title').textContent = this.value + ' Curriculum Map';
+                loadSubjectContent(this.value);
+            }
+        });
+
+        function loadSubjectContent(subject) {
+            const gradeLevel = document.getElementById('grade-level').value;
+            const template = subjectTemplates[subject];
+            
+            console.log('Loading subject:', subject, 'Grade:', gradeLevel); // Debug log
+            
+            if (!template) {
+                console.log('No template found for subject:', subject);
+                return;
+            }
+            
+            // Get grade-specific content or default to general template
+            const gradeTemplate = template[gradeLevel] || template;
+            console.log('Grade template:', gradeTemplate); // Debug log
+            
+            if (!gradeTemplate || !gradeTemplate.months) {
+                console.log('No months data in template');
+                return;
+            }
+
+            const tbody = document.getElementById('curriculum-body');
+            
+            // Clear existing rows first
+            tbody.innerHTML = '';
+            
+            // Determine how many months to show based on calendar system
+            const calendarSystem = document.getElementById('calendar-system').value;
+            let monthsNeeded = 3; // default quarters
+            if (calendarSystem === 'semesters') monthsNeeded = 6;
+            else if (calendarSystem === 'trimesters') monthsNeeded = 4;
+            else if (calendarSystem === 'terms') monthsNeeded = 3;
+            
+            // Use available template months (up to what we need)
+            const availableMonths = gradeTemplate.months.length;
+            const monthsToShow = Math.min(monthsNeeded, availableMonths);
+            
+            console.log('Months to show:', monthsToShow, 'Available:', availableMonths); // Debug log
+            
+            // Get month names for current period
+            const startMonth = document.getElementById('school-year-start').value;
+            const monthMap = {
+                'january': 0, 'february': 1, 'march': 2, 'april': 3,
+                'may': 4, 'june': 5, 'july': 6, 'august': 7,
+                'september': 8, 'october': 9, 'november': 10, 'december': 11
+            };
+            const startMonthIndex = monthMap[startMonth] || 8;
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            
+            // Calculate months for current period
+            let monthsPerPeriod = 3;
+            if (calendarSystem === 'semesters') monthsPerPeriod = 6;
+            else if (calendarSystem === 'trimesters') monthsPerPeriod = 4;
+            else if (calendarSystem === 'terms') monthsPerPeriod = 3;
+            
+            const periodMonths = [];
+            for (let i = 0; i < monthsToShow; i++) {
+                const monthIndex = (startMonthIndex + (currentQuarter - 1) * monthsPerPeriod + i) % 12;
+                periodMonths.push(monthNames[monthIndex]);
+            }
+            
+            // Create rows with template content
+            for (let i = 0; i < monthsToShow; i++) {
+                const newRow = tbody.insertRow();
+                const monthData = gradeTemplate.months[i];
+                
+                // Month name cell
+                const monthCell = newRow.insertCell();
+                monthCell.innerHTML = '<strong>' + periodMonths[i] + '</strong>';
+                
+                // Content cells with template data
+                const cells = [
+                    monthData.objectives || 'Click to edit...',
+                    monthData.content || 'Click to edit...',
+                    monthData.skills || 'Click to edit...',
+                    monthData.assessment || 'Click to edit...',
+                    monthData.activities || 'Click to edit...',
+                    monthData.resources || 'Click to edit...',
+                    monthData.standards || 'Click to edit...'
+                ];
+                
+                cells.forEach(content => {
+                    const cell = newRow.insertCell();
+                    cell.innerHTML = '<div class="editable" contenteditable="true">' + content + '</div>';
+                });
+            }
+            
+            console.log('Template loaded successfully with', monthsToShow, 'months');
+        }
+
+
+
+        // Update display when calendar system changes
+        document.getElementById('calendar-system').addEventListener('change', updateQuarterDisplay);
+
+        // Handle custom start month
+        document.getElementById('custom-start-month').addEventListener('change', function() {
+            if (this.value) {
+                const date = new Date(this.value + '-01');
+                const monthNames = [
+                    'january', 'february', 'march', 'april', 'may', 'june',
+                    'july', 'august', 'september', 'october', 'november', 'december'
+                ];
+                const monthName = monthNames[date.getMonth()];
+                document.getElementById('school-year-start').value = monthName;
+                updateQuarterDisplay();
+            }
+        });
+
+        // Update subject title when custom subject name changes
+        document.getElementById('custom-subject').addEventListener('input', function() {
+            if (this.value.trim()) {
+                document.getElementById('subject-title').textContent = this.value + ' Curriculum Map';
+            }
+        });
+
+        // Update subject title when subject name changes
+        document.getElementById('subject-name').addEventListener('change', function() {
+            if (this.value !== 'Custom') {
+                document.getElementById('subject-title').textContent = this.value + ' Curriculum Map';
+                loadSubjectContent(this.value);
+            }
+        });
+
+        // Language translations
+        const translations = {
+            english: {
+                'Subject Curriculum Map': 'Subject Curriculum Map',
+                'Quarterly Overview': 'Quarterly Overview',
+                'Semester Overview': 'Semester Overview',
+                'Trimester Overview': 'Trimester Overview',
+                'Term Overview': 'Term Overview',
+                'Subject Name': 'Subject Name',
+                'Grade Level': 'Grade Level',
+                'Country/Region': 'Country/Region',
+                'Interface Language': 'Interface Language',
+                'Period': 'Period',
+                'Academic Year': 'Academic Year',
+                'Quarter': 'Quarter',
+                'Semester': 'Semester',
+                'Trimester': 'Trimester',
+                'Term': 'Term',
+                'Subject': 'Subject',
+                'Textbook': 'Textbook',
+                'Week': 'Week'
+            },
+            filipino: {
+                'Subject Curriculum Map': 'Mapa ng Kurikulum ng Asignatura',
+                'Quarterly Overview': 'Pangkalahatang Tingin sa Quarter',
+                'Semester Overview': 'Pangkalahatang Tingin sa Semester',
+                'Trimester Overview': 'Pangkalahatang Tingin sa Trimester',
+                'Term Overview': 'Pangkalahatang Tingin sa Term',
+                'Subject Name': 'Pangalan ng Asignatura',
+                'Grade Level': 'Antas ng Baitang',
+                'Country/Region': 'Bansa/Rehiyon',
+                'Interface Language': 'Wika ng Interface',
+                'Period': 'Panahon',
+                'Academic Year': 'Taong Pang-akademiko',
+                'Quarter': 'Quarter',
+                'Semester': 'Semester',
+                'Trimester': 'Trimester',
+                'Term': 'Term',
+                'Subject': 'Asignatura',
+                'Textbook': 'Aklat-aralin',
+                'Week': 'Linggo'
+            },
+            spanish: {
+                'Subject Curriculum Map': 'Mapa Curricular de Materia',
+                'Quarterly Overview': 'Resumen Trimestral',
+                'Semester Overview': 'Resumen Semestral',
+                'Trimester Overview': 'Resumen Trimestral',
+                'Term Overview': 'Resumen del Período',
+                'Subject Name': 'Nombre de la Materia',
+                'Grade Level': 'Nivel de Grado',
+                'Country/Region': 'País/Región',
+                'Interface Language': 'Idioma de Interfaz',
+                'Period': 'Período',
+                'Academic Year': 'Año Académico',
+                'Quarter': 'Trimestre',
+                'Semester': 'Semestre',
+                'Trimester': 'Trimestre',
+                'Term': 'Período',
+                'Subject': 'Materia',
+                'Textbook': 'Libro de Texto',
+                'Week': 'Semana'
+            },
+            japanese: {
+                'Subject Curriculum Map': '教科カリキュラムマップ',
+                'Quarterly Overview': '四半期概要',
+                'Semester Overview': '学期概要',
+                'Trimester Overview': '三学期概要',
+                'Term Overview': '学期概要',
+                'Subject Name': '教科名',
+                'Grade Level': '学年',
+                'Country/Region': '国・地域',
+                'Interface Language': 'インターフェース言語',
+                'Period': '期間',
+                'Academic Year': '学年度',
+                'Quarter': '四半期',
+                'Semester': '学期',
+                'Trimester': '三学期',
+                'Term': '学期',
+                'Subject': '教科',
+                'Textbook': '教科書',
+                'Week': '週'
+            },
+            korean: {
+                'Subject Curriculum Map': '과목 교육과정 지도',
+                'Quarterly Overview': '분기별 개요',
+                'Semester Overview': '학기별 개요',
+                'Trimester Overview': '삼학기 개요',
+                'Term Overview': '학기 개요',
+                'Subject Name': '과목명',
+                'Grade Level': '학년',
+                'Country/Region': '국가/지역',
+                'Interface Language': '인터페이스 언어',
+                'Period': '기간',
+                'Academic Year': '학년도',
+                'Quarter': '분기',
+                'Semester': '학기',
+                'Trimester': '삼학기',
+                'Term': '학기',
+                'Subject': '과목',
+                'Textbook': '교과서',
+                'Week': '주'
+            },
+            french: {
+                'Subject Curriculum Map': 'Carte Curriculaire de Matière',
+                'Quarterly Overview': 'Aperçu Trimestriel',
+                'Semester Overview': 'Aperçu Semestriel',
+                'Trimester Overview': 'Aperçu Trimestriel',
+                'Term Overview': 'Aperçu du Trimestre',
+                'Subject Name': 'Nom de la Matière',
+                'Grade Level': 'Niveau Scolaire',
+                'Country/Region': 'Pays/Région',
+                'Interface Language': 'Langue d\'Interface',
+                'Period': 'Période',
+                'Academic Year': 'Année Académique',
+                'Quarter': 'Trimestre',
+                'Semester': 'Semestre',
+                'Trimester': 'Trimestre',
+                'Term': 'Trimestre',
+                'Subject': 'Matière',
+                'Textbook': 'Manuel',
+                'Week': 'Semaine'
+            },
+            chinese: {
+                'Subject Curriculum Map': '学科课程图',
+                'Quarterly Overview': '季度概览',
+                'Semester Overview': '学期概览',
+                'Trimester Overview': '三学期概览',
+                'Term Overview': '学期概览',
+                'Subject Name': '学科名称',
+                'Grade Level': '年级',
+                'Country/Region': '国家/地区',
+                'Interface Language': '界面语言',
+                'Period': '时期',
+                'Academic Year': '学年',
+                'Quarter': '季度',
+                'Semester': '学期',
+                'Trimester': '三学期',
+                'Term': '学期',
+                'Subject': '学科',
+                'Textbook': '教科书',
+                'Week': '周'
+            },
+            thai: {
+                'Subject Curriculum Map': 'แผนที่หลักสูตรวิชา',
+                'Quarterly Overview': 'ภาพรวมรายไตรมาส',
+                'Semester Overview': 'ภาพรวมรายภาค',
+                'Trimester Overview': 'ภาพรวมสามภาค',
+                'Term Overview': 'ภาพรวมเทอม',
+                'Subject Name': 'ชื่อวิชา',
+                'Grade Level': 'ระดับชั้น',
+                'Country/Region': 'ประเทศ/ภูมิภาค',
+                'Interface Language': 'ภาษาอินเทอร์เฟซ',
+                'Period': 'ช่วงเวลา',
+                'Academic Year': 'ปีการศึกษา',
+                'Quarter': 'ไตรมาส',
+                'Semester': 'ภาคเรียน',
+                'Trimester': 'สามภาค',
+                'Term': 'เทอม',
+                'Subject': 'วิชา',
+                'Textbook': 'หนังสือเรียน',
+                'Week': 'สัปดาห์'
+            },
+            arabic: {
+                'Subject Curriculum Map': 'خريطة منهج المادة',
+                'Quarterly Overview': 'نظرة عامة ربع سنوية',
+                'Semester Overview': 'نظرة عامة للفصل الدراسي',
+                'Trimester Overview': 'نظرة عامة للثلاثي',
+                'Term Overview': 'نظرة عامة للفترة',
+                'Subject Name': 'اسم المادة',
+                'Grade Level': 'مستوى الصف',
+                'Country/Region': 'البلد/المنطقة',
+                'Interface Language': 'لغة الواجهة',
+                'Period': 'الفترة',
+                'Academic Year': 'السنة الأكاديمية',
+                'Quarter': 'الربع',
+                'Semester': 'الفصل الدراسي',
+                'Trimester': 'الثلاثي',
+                'Term': 'الفترة',
+                'Subject': 'المادة',
+                'Textbook': 'الكتاب المدرسي',
+                'Week': 'الأسبوع'
+            },
+            hindi: {
+                'Subject Curriculum Map': 'विषय पाठ्यक्रम मानचित्र',
+                'Quarterly Overview': 'त्रैमासिक अवलोकन',
+                'Semester Overview': 'सेमेस्टर अवलोकन',
+                'Trimester Overview': 'त्रिमेस्टर अवलोकन',
+                'Term Overview': 'टर्म अवलोकन',
+                'Subject Name': 'विषय का नाम',
+                'Grade Level': 'कक्षा स्तर',
+                'Country/Region': 'देश/क्षेत्र',
+                'Interface Language': 'इंटरफेस भाषा',
+                'Period': 'अवधि',
+                'Academic Year': 'शैक्षणिक वर्ष',
+                'Quarter': 'तिमाही',
+                'Semester': 'सेमेस्टर',
+                'Trimester': 'त्रिमेस्टर',
+                'Term': 'टर्म',
+                'Subject': 'विषय',
+                'Textbook': 'पाठ्यपुस्तक',
+                'Week': 'सप्ताह'
+            }
+        };
+
+        function updateLanguage(language) {
+            const trans = translations[language] || translations.english;
+            
+            // Update tab labels
+            document.querySelector('.nav-tab:first-child').textContent = trans['Subject Curriculum Map'];
+            
+            // Update form labels
+            document.querySelector('label[for="subject-name"]').textContent = trans['Subject Name'];
+            document.querySelector('label[for="grade-level"]').textContent = trans['Grade Level'];
+            document.getElementById('country-label').textContent = trans['Country/Region'];
+            document.getElementById('language-label').textContent = trans['Interface Language'];
+            document.getElementById('period-label').textContent = trans['Period'];
+            document.querySelector('label[for="academic-year"]').textContent = trans['Academic Year'];
+            
+            // Update table headers
+            const headerRow = document.getElementById('week-headers');
+            if (headerRow.children[0]) headerRow.children[0].innerHTML = '<strong>' + trans['Subject'] + '</strong>';
+            if (headerRow.children[1]) headerRow.children[1].innerHTML = '<strong>' + trans['Textbook'] + '</strong>';
+            
+            // Update week headers
+            for (let i = 2; i < headerRow.children.length; i++) {
+                const weekNum = i - 1;
+                headerRow.children[i].innerHTML = `<strong>${trans['Week']} ${weekNum}</strong><br><span class="date-range">${trans['Week']} ${weekNum}</span>`;
+            }
+        }
+
+        // Country-language linking
+        const countryLanguageMap = {
+            'philippines': 'filipino',
+            'usa': 'english',
+            'canada': 'english',
+            'uk': 'english',
+            'australia': 'english',
+            'singapore': 'english',
+            'malaysia': 'malay',
+            'india': 'hindi',
+            'japan': 'japanese',
+            'south-korea': 'korean',
+            'thailand': 'thai',
+            'indonesia': 'indonesian',
+            'vietnam': 'vietnamese',
+            'uae': 'arabic',
+            'saudi-arabia': 'arabic',
+            'qatar': 'arabic',
+            'kuwait': 'arabic',
+            'bahrain': 'arabic',
+            'oman': 'arabic',
+            'other': 'english'
+        };
+
+        // Update content when grade level changes
+        document.getElementById('grade-level').addEventListener('change', function() {
+            const currentSubject = document.getElementById('subject-name').value;
+            if (currentSubject && currentSubject !== 'Custom') {
+                console.log('Grade changed, reloading subject content for:', currentSubject);
+                loadSubjectContent(currentSubject);
+            }
+            
+            // Update quarter title
+            const studentName = document.getElementById('header-student-name').textContent;
+            const displayName = studentName === 'Click to edit' ? '' : studentName;
+            document.getElementById('quarter-title').textContent = 'Curriculum Map - Grade ' + this.value + (displayName ? ' - ' + displayName : '');
+        });
+
+        // Update quarter subtitle when quarter changes
+        document.getElementById('quarter-select').addEventListener('change', function() {
+            const calendarSystem = document.getElementById('calendar-system').value;
+            let periodName = 'Quarter';
+            if (calendarSystem === 'semesters') periodName = 'Semester';
+            else if (calendarSystem === 'trimesters') periodName = 'Trimester';
+            else if (calendarSystem === 'terms') periodName = 'Term';
+            
+            document.getElementById('quarter-subtitle').textContent = periodName + ' ' + this.value;
+        });
+
+        // Language interface event listeners
+        document.getElementById('language-interface').addEventListener('change', function() {
+            updateLanguage(this.value);
+        });
+
+        document.getElementById('country-region').addEventListener('change', function() {
+            const suggestedLanguage = countryLanguageMap[this.value];
+            if (suggestedLanguage && translations[suggestedLanguage]) {
+                document.getElementById('language-interface').value = suggestedLanguage;
+                updateLanguage(suggestedLanguage);
+            }
+        });
+
+        // Header name editing function
+        function editHeaderName(type) {
+            const element = document.getElementById(`header-${type}-name`);
+            const currentText = element.textContent === 'Click to edit' ? '' : element.textContent;
+            const promptText = type === 'student' ? 'Enter student name:' : 'Enter educator/teacher name:';
+            const newName = prompt(promptText, currentText);
+            
+            if (newName !== null) {
+                element.textContent = newName || 'Click to edit';
+                
+                if (type === 'student') {
+                    document.getElementById('student-name').value = newName || '';
+                    // Update quarter title
+                    const grade = document.getElementById('grade-level').value;
+                    document.getElementById('quarter-title').textContent = 'Curriculum Map - Grade ' + grade + (newName ? ' - ' + newName : '');
+                }
+            }
+        }
+
+        // Auto-save functionality (stores in browser's local storage)
+        function autoSave() {
+            const data = {
+                subjectName: document.getElementById('subject-name').value,
+                gradeLevel: document.getElementById('grade-level').value,
+                studentName: document.getElementById('student-name').value,
+                currentQuarter: currentQuarter,
+                currentYear: globalCurrentYear
+            };
+            
+            // Save editable content
+            document.querySelectorAll('.editable').forEach((element, index) => {
+                data['editable_' + index] = element.innerHTML;
+            });
+            
+            localStorage.setItem('curriculumMap', JSON.stringify(data));
+        }
+
+        // Load saved data
+        function loadSavedData() {
+            const saved = localStorage.getItem('curriculumMap');
+            if (saved) {
+                const data = JSON.parse(saved);
+                
+                if (data.subjectName) document.getElementById('subject-name').value = data.subjectName;
+                if (data.gradeLevel) document.getElementById('grade-level').value = data.gradeLevel;
+                if (data.studentName) document.getElementById('student-name').value = data.studentName;
+                if (data.currentQuarter) currentQuarter = data.currentQuarter;
+                if (data.currentYear) globalCurrentYear = data.currentYear;
+                
+                // Restore editable content
+                document.querySelectorAll('.editable').forEach((element, index) => {
+                    if (data['editable_' + index]) {
+                        element.innerHTML = data['editable_' + index];
+                    }
+                });
+                
+                updateQuarterDisplay();
+            }
+        }
+
+        // Auto-save every 30 seconds
+        setInterval(autoSave, 30000);
+
+        // Save when user makes changes
+        document.addEventListener('input', autoSave);
+        document.addEventListener('blur', autoSave, true);
+
+        // Load saved data on page load
+        window.addEventListener('load', loadSavedData);
+
+        // Export and utility functions
+        function exportToPDF() {
+            window.print();
+            // In a real implementation, you'd use a library like jsPDF or html2pdf
+            alert('📄 PDF export feature! In the full version, this would generate a professional PDF download.');
+        }
+
+        function printMap() {
+            window.print();
+        }
+
+        function saveAsTemplate() {
+            const templateName = prompt('Enter template name:');
+            if (templateName) {
+                const templates = JSON.parse(localStorage.getItem('curriculumTemplates') || '{}');
+                templates[templateName] = {
+                    subjectName: document.getElementById('subject-name').value,
+                    gradeLevel: document.getElementById('grade-level').value,
+                    customSubject: document.getElementById('custom-subject').value,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Save editable content
+                document.querySelectorAll('.editable').forEach((element, index) => {
+                    templates[templateName]['editable_' + index] = element.innerHTML;
+                });
+                
+                localStorage.setItem('curriculumTemplates', JSON.stringify(templates));
+                alert('✅ Template "' + templateName + '" saved successfully!');
+            }
+        }
+
+        function duplicateSubject() {
+            const currentSubject = document.getElementById('subject-name').value;
+            const newSubject = prompt('Enter name for duplicated subject:', currentSubject + ' - Copy');
+            if (newSubject) {
+                // In a full implementation, this would create a new curriculum map
+                alert('📋 Subject duplicated! This would create a new curriculum map for "' + newSubject + '"');
+            }
+        }
+
+        // Add loading animation
+        function showLoadingAnimation() {
+            const container = document.querySelector('.container');
+            container.style.opacity = '0.7';
+            container.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                container.style.opacity = '1';
+                container.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        // Set automatic academic year based on current date and school start
+        function setAutomaticAcademicYear() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth(); // 0-11
+            
+            const startMonth = document.getElementById('school-year-start').value;
+            const monthMap = {
+                'january': 0, 'february': 1, 'march': 2, 'april': 3,
+                'may': 4, 'june': 5, 'july': 6, 'august': 7,
+                'september': 8, 'october': 9, 'november': 10, 'december': 11
+            };
+            
+            const startMonthIndex = monthMap[startMonth] || 8; // Default to September
+            
+            let academicStartYear, academicEndYear;
+            
+            // For September 2025 start, academic year should be 2025-2026
+            // If we're currently before September 2025, the next academic year starts in 2025
+            if (currentYear === 2024 && currentMonth < 8) {
+                // We're in 2024 before September, so next academic year is 2025-2026
+                academicStartYear = 2025;
+                academicEndYear = 2026;
+            } else if (currentYear === 2024 && currentMonth >= 8) {
+                // We're in 2024 after September, so current academic year is 2024-2025, next is 2025-2026
+                academicStartYear = 2025;
+                academicEndYear = 2026;
+            } else {
+                // For any other year, use standard logic
+                if (currentMonth < startMonthIndex) {
+                    academicStartYear = currentYear;
+                    academicEndYear = currentYear + 1;
+                } else {
+                    academicStartYear = currentYear;
+                    academicEndYear = currentYear + 1;
+                }
+            }
+            
+            const academicYear = `${academicStartYear}-${academicEndYear}`;
+            document.getElementById('academic-year').value = academicYear;
+            
+            // Update the global currentYear variable
+            globalCurrentYear = academicStartYear;
+        }
+
+        // Update academic year when school start changes
+        document.getElementById('school-year-start').addEventListener('change', function() {
+            setAutomaticAcademicYear();
+            const customInput = document.getElementById('custom-start-month');
+            if (this.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+                updateQuarterDisplay();
+            }
+        });
+
+        // Initialize with animation
+        window.addEventListener('load', () => {
+            showLoadingAnimation();
+            setAutomaticAcademicYear();
+            updateQuarterDisplay();
+            
+            // Load initial subject content
+            const initialSubject = document.getElementById('subject-name').value;
+            if (initialSubject && initialSubject !== 'Custom') {
+                loadSubjectContent(initialSubject);
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e09a6bb5f9c724',t:'MTc1NTAwODMxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
